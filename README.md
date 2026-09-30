@@ -68,6 +68,52 @@ All three completed evaluations use the same reported test-set size (**3,808**).
 
 **Source results:** [ResNet50 scratch](results/resnet50_scratch_test_results.json) · [DenseNet121 scratch](results/densenet121_scratch_test_results.json) · [ResNet50 transfer](results/resnet50_transfer_test_results.json)
 
+## Visual results
+
+The following plots are generated **from the committed training-history, test-results, and confusion-matrix files** using [`scripts/generate_figures.py`](scripts/generate_figures.py). Select an image to open it at full resolution. No model retraining is required.
+
+### Held-out test comparison
+
+[![Bar charts comparing test accuracy and macro F1 for ResNet50 scratch, DenseNet121 scratch, and ResNet50 transfer learning](figures/test_metrics_comparison.png)](figures/test_metrics_comparison.png)
+
+*Three runs have verified held-out test results. DenseNet121 transfer learning is deliberately omitted from this comparison until its final test evaluation is available.*
+
+### Training histories
+
+Each figure shows training and validation loss, training and validation accuracy, and **validation macro F1** by epoch. Transfer-learning charts distinguish feature extraction from fine-tuning with a dashed boundary.
+
+| ResNet50 from scratch | DenseNet121 from scratch |
+|:---:|:---:|
+| [![ResNet50 scratch training and validation curves](figures/resnet50_scratch_training.png)](figures/resnet50_scratch_training.png) | [![DenseNet121 scratch training and validation curves](figures/densenet121_scratch_training.png)](figures/densenet121_scratch_training.png) |
+
+| ResNet50 transfer learning | DenseNet121 transfer learning |
+|:---:|:---:|
+| [![ResNet50 transfer learning and fine-tuning curves](figures/resnet50_transfer_training.png)](figures/resnet50_transfer_training.png) | [![DenseNet121 transfer learning and fine-tuning curves](figures/densenet121_transfer_training.png)](figures/densenet121_transfer_training.png) |
+
+*The DenseNet121 transfer-learning history is available even though its final held-out test metrics have not yet been published. The plots reflect recorded runs rather than comparable wall-clock budgets.*
+
+### Normalized test confusion matrices
+
+The rows represent the **true diagnostic class**, and the columns represent the **predicted class**. Each row is divided by the total number of test examples in that class, so diagonal values show class-specific recall. These images summarize per-class errors; they do **not** establish clinical validity.
+
+| ResNet50 from scratch | DenseNet121 from scratch |
+|:---:|:---:|
+| [![Row-normalized ResNet50 scratch test confusion matrix](figures/resnet50_scratch_confusion_matrix.png)](figures/resnet50_scratch_confusion_matrix.png) | [![Row-normalized DenseNet121 scratch test confusion matrix](figures/densenet121_scratch_confusion_matrix.png)](figures/densenet121_scratch_confusion_matrix.png) |
+
+**ResNet50 transfer learning:**
+
+[![Row-normalized ResNet50 transfer learning test confusion matrix](figures/resnet50_transfer_confusion_matrix.png)](figures/resnet50_transfer_confusion_matrix.png)
+
+*The DenseNet121 transfer-learning test confusion matrix will be added only after the evaluation is complete.*
+
+To regenerate the figures locally after cloning and installing the dependencies:
+
+```bash
+python scripts/generate_figures.py
+```
+
+This writes eight PNG files under `figures/` without loading the ISIC images or trained checkpoints.
+
 ## Repository layout
 
 ```text
