@@ -1,0 +1,12 @@
+Metric,Value
+Model,DenseNet121
+Training Strategy,From Scratch
+Pretrained Weights,No
+Data Augmentation,No
+Best Epoch,6
+Best Validation Macro F1,0.3773
+Test Loss,1.5568
+Test Accuracy (%),49.53
+Test Macro F1,0.3491
+Test Weighted F1,0.5292
+Test Samples,3808

@@ -1,0 +1,66 @@
+# ==============================
+# DATASETS
+# ==============================
+dataset/
+datasets/
+
+# ==============================
+# TRAINED MODELS
+# ==============================
+saved_models/
+*.pth
+*.pt
+*.ckpt
+*.h5
+*.safetensors
+
+# ==============================
+# JUPYTER TEMPORARY FILES
+# ==============================
+.ipynb_checkpoints/
+.virtual_documents/
+
+# ==============================
+# PYTHON CACHE
+# ==============================
+__pycache__/
+*.pyc
+*.pyo
+
+# ==============================
+# ENVIRONMENTS
+# ==============================
+venv/
+.venv/
+env/
+anaconda_projects/
+
+# ==============================
+# MACOS FILES
+# ==============================
+.DS_Store
+
+# ==============================
+# SENSITIVE CONFIGURATION
+# ==============================
+.env
+.env.*
+!.env.example
+
+# ==============================
+# EDITOR FILES
+# ==============================
+.vscode/
+.idea/
+
+# Per-image prediction files
+# Excluded because they may contain local filesystem paths
+results/*predictions.csv
+
+# Original research notebooks
+# Upload only cleaned copies inside notebooks/
+/*.ipynb
+
+results/densenet121_transfer_stage2_config.json
+
+results/resnet50_transfer_stage2_config.json

@@ -1,0 +1,2 @@
+Experiment,Architecture,Transfer_Learning,Data_Augmentation,Image_Size,Batch_Size,Epochs_Completed,Best_Epoch,Best_Validation_Macro_F1,Test_Loss,Test_Accuracy,Test_Macro_F1,Test_Weighted_F1,Training_Time_Minutes,Total_Parameters,Trainable_Parameters
+ResNet50 Scratch,ResNet50,False,False,224,32,25,23,0.40457254412991683,3.0360523539931834,0.5635504201680672,0.4119805648970807,0.5829417921785295,1077.8318803270658,23524424,23524424

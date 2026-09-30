@@ -1,0 +1,11 @@
+{
+    "model_name": "DenseNet121",
+    "training_type": "from_scratch",
+    "best_epoch": 6,
+    "best_validation_macro_f1": 0.3773402831657704,
+    "test_loss": 1.5568447528766984,
+    "test_accuracy": 0.4952731092436975,
+    "test_macro_f1": 0.3491315006064674,
+    "test_weighted_f1": 0.5292230291509331,
+    "test_samples": 3808
+}

@@ -1,0 +1,9 @@
+,Melanoma,Melanocytic Nevus,Basal Cell Carcinoma,Actinic Keratosis,Benign Keratosis,Dermatofibroma,Vascular Lesion,Squamous Cell Carcinoma
+Melanoma,376,150,50,13,49,1,3,6
+Melanocytic Nevus,238,1521,72,12,90,7,6,5
+Basal Cell Carcinoma,31,38,357,29,20,6,5,21
+Actinic Keratosis,15,7,38,54,25,1,0,7
+Benign Keratosis,82,78,42,18,169,3,5,7
+Dermatofibroma,2,9,3,1,7,5,2,0
+Vascular Lesion,1,2,8,0,0,0,22,0
+Squamous Cell Carcinoma,12,5,28,16,10,7,0,11

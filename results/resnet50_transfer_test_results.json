@@ -1,0 +1,14 @@
+{
+    "model_name": "ResNet50",
+    "training_strategy": "transfer_learning_and_fine_tuning",
+    "pretrained_weights": "ImageNet",
+    "best_stage1_epoch": 9,
+    "best_stage1_validation_macro_f1": 0.4432399476311358,
+    "best_stage2_epoch": 11,
+    "best_stage2_validation_macro_f1": 0.4903702546661445,
+    "test_loss": 1.8281036398741377,
+    "test_accuracy": 0.6604516806722689,
+    "test_macro_f1": 0.4623053409132026,
+    "test_weighted_f1": 0.6620410462760666,
+    "test_samples": 3808
+}

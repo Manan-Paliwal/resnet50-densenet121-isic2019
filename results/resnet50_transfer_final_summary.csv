@@ -1,0 +1,14 @@
+Metric,Value
+Model,ResNet50
+Training Strategy,Transfer Learning + Fine-Tuning
+Pretrained Weights,ImageNet
+Data Augmentation,No
+Best Stage 1 Epoch,9
+Best Stage 1 Val Macro F1,0.4432
+Best Stage 2 Epoch,11
+Best Stage 2 Val Macro F1,0.4904
+Test Loss,1.8281
+Test Accuracy (%),66.05
+Test Macro F1,0.4623
+Test Weighted F1,0.662
+Test Samples,3808

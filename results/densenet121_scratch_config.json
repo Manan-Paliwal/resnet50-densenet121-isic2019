@@ -1,0 +1,23 @@
+{
+    "model_name": "DenseNet121",
+    "training_type": "from_scratch",
+    "pretrained_weights": false,
+    "data_augmentation": false,
+    "num_classes": 8,
+    "image_size": 224,
+    "cache_size": 256,
+    "batch_size": 32,
+    "num_workers": 0,
+    "optimizer": "AdamW",
+    "learning_rate": 0.0003,
+    "weight_decay": 0.0001,
+    "scheduler": "ReduceLROnPlateau",
+    "scheduler_mode": "min",
+    "scheduler_factor": 0.5,
+    "scheduler_patience": 2,
+    "num_epochs": 25,
+    "early_stopping_patience": 5,
+    "loss_function": "Weighted CrossEntropyLoss",
+    "random_seed": 42,
+    "device": "mps"
+}
