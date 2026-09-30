@@ -1,0 +1,10 @@
+# Primary packages imported by the published notebooks.
+# Versions are intentionally unpinned; reproduce the original environment for exact results.
+numpy
+pandas
+matplotlib
+Pillow
+scikit-learn
+torch
+torchvision
+jupyterlab
