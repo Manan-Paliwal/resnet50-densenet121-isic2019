@@ -2,6 +2,8 @@
 /dataset/
 /datasets/
 *predictions.csv
+# Private exports and links in each Model - NN Results folder
+/results/*/private/
 *.jpg
 *.jpeg
 *.dcm

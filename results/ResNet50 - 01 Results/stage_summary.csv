@@ -1,0 +1,2 @@
+stage,epochs,best_epoch,best_val_macro_f1,epoch_seconds
+training,25,23,0.40457254412991683,64669.91281962395

@@ -77,3 +77,12 @@ Each cell shows precision / recall / F1 in percent. Rare-class scores are sensit
 A controlled ResNet50 augmentation comparison would require a baseline without augmentation on the same CUDA and software configuration as 05, with the same selection rule. Architecture comparisons should also match loss aggregation and relevant precision settings. Multiple seeds would quantify training variability separately from test-set sampling uncertainty.
 
 Cloud train and validation manifest membership could not be independently recovered from the run export. Test predictions match the permanent test split. The separate dataset staging manifests match the local permanent copies. Historical holdout reuse and incomplete decision logs also limit confirmatory interpretation. No evidence was found in the saved training code of test-set checkpoint selection.
+
+
+## Published artifact layout
+
+The six [experiment result folders](../) hold the publication copies. Transfer learning histories remain separate by stage. Each experiment includes its own training curves and normalized confusion matrix. The [shared test comparison](test_metrics_comparison.png) uses the recorded test JSONs.
+
+The three legacy classification reports and stage summaries were regenerated from the saved predictions and histories. The 03-vs-05 comparison was regenerated from recorded aggregate outcomes after cloud execution. The original run omitted this comparison because its baseline artifacts were unavailable in that runtime. These are post-run reports. The original cloud artifact and checkpoint names remain in the local run and provenance directories.
+
+[Primary paired intervals](paired_bootstrap_intervals.csv) and [sensitivity intervals](paired_bootstrap_sensitivity.csv) reproduce the saved audit data. The comparison graph uses the primary macro F1 intervals.

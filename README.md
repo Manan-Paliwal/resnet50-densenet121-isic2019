@@ -19,13 +19,13 @@ All six experiments were evaluated on the same 3,808-image internal test split. 
 | [05](notebooks/05_ResNet50_Transfer_Augmentation.ipynb) | ResNet50 transfer + augmentation | **53.17%** | **66.12%** | 49.97% | **67.38%** |
 | [06](notebooks/06_DenseNet121_Transfer_Augmentation.ipynb) | DenseNet121 transfer + augmentation | 52.79% | 63.94% | 50.03% | 65.77% |
 
-![Held-out test performance across six CNN experiments](figures/test_metrics_comparison.png)
+![Held-out test performance across six CNN experiments](results/Model%20Comparison%20Results/test_metrics_comparison.png)
 
 - **Transfer runs scored higher than scratch runs.** Test macro F1 increased by 5.03 percentage points for ResNet50 (01 → 03) and 15.24 for DenseNet121 (02 → 04). These runs differ in their training protocols, and the DenseNet121 comparison spans Apple MPS and NVIDIA CUDA.
 - **The DenseNet121 augmentation result depends on the metric.** Relative to Experiment 04, Experiment 06 gained 1.78 points in validation macro F1 and 5.09 points in test macro recall. Its test accuracy fell by 1.34 points and its test macro F1 fell by 0.13 points.
 - **Experiments 04–06 were close on test macro F1.** Their scores span only 0.18 percentage points. For 04 → 06 the paired 95% test-group bootstrap interval for the macro F1 change was −3.40 to +3.20 points. This interval describes uncertainty across test groups for the fitted models. Seed-to-seed training variation remains unmeasured.
 
-See the [research audit](docs/research-audit.md) for per-class results, training trends, paired comparisons, and sensitivity checks.
+See the [research audit](results/Model%20Comparison%20Results/research-audit.md) for per-class results, training trends, paired comparisons, and sensitivity checks.
 
 ## Dataset and protocol
 
@@ -50,7 +50,8 @@ Augmentation in Experiments 05 and 06 applies 50% horizontal and vertical flips,
 
 ## Reproduce the figures and workflow
 
-- [Aggregate results](results/) contains the historical Experiments 01–03 records and [cloud results](results/cloud/) for 04–06, including histories, configurations, test summaries, per-class scores, and confusion matrices. [Figures](figures/) contains training curves and aggregate evaluations.
+- [Results](results/) uses one named folder per experiment: [01](results/ResNet50%20-%2001%20Results/), [02](results/DenseNet121%20-%2002%20Results/), [03](results/ResNet50%20-%2003%20Results/), [04](results/DenseNet121%20-%2004%20Results/), [05](results/ResNet50%20-%2005%20Results/), and [06](results/DenseNet121%20-%2006%20Results/). Each folder contains the available histories, configurations, test summaries, and class metrics. Each experiment's `figures/` folder contains its learning curves and confusion matrices. [Model Comparison Results](results/Model%20Comparison%20Results/) contains cross-experiment tables, comparative figures, and the research audit.
+- Each local experiment folder has a Git-ignored `private/` section. It contains private exports or links to original predictions, checkpoints, previews, and executed notebooks where available. Cloud-run and archive locations stay fixed for checkpoint recovery and provenance.
 - The public milestone contains cleaned notebooks and aggregate artifacts. Obtain the images, ground truth, and metadata from the dataset provider, following the provider’s licenses and attribution requirements. Dataset and model artifacts are kept outside this repository. [Official ISIC datasets](https://challenge.isic-archive.com/data/#2019)
 
 From the repository root, install the notebook dependencies and regenerate the figures from saved result files:
@@ -67,11 +68,22 @@ To reproduce training:
 3. Run the selected training notebook with a compatible PyTorch and TorchVision device build. Use fresh model and results directories to preserve the published artifacts. Adjust the legacy 01–03 output paths before training. The appendices in Notebooks 04–06 describe checkpoint recovery on persistent storage.
 4. Match the recorded run settings for historical reproduction. Experiments 01–03 used MPS and zero DataLoader workers. The RTX 3090 runs for Experiments 04–06 used four workers with CUDA AMP disabled. The saved cloud configurations describe the executed settings.
 
+### Result naming for future experiments
+
+Create `results/Model - NN Results/` (for example, `results/Custom CNN - 07 Results/`) with these names for aggregate artifacts:
+
+- `experiment_config.json` for a shared configuration or `stage1_config.json` and `stage2_config.json` for separately recorded stages.
+- `history.csv` for a single training phase, or `stage1_history.csv` and `stage2_history.csv` for transfer learning. Keep `stage_summary.csv` alongside them.
+- `test_results.json`, `classification_report.csv`, `per_class_results.csv`, `confusion_matrix.csv`, and `confusion_matrix_normalized.csv`.
+- `figures/` for training curves, accuracy, loss, validation macro F1, learning rates when recorded, and raw and normalized confusion matrices. The figure script discovers conforming folders automatically. It includes completed experiments with `test_results.json` in the overall comparison.
+
+Keep raw run directories, executed notebooks, and checkpoints in the ignored local locations. Aggregate publication copies may omit private files or use sanitized configurations. Historical table columns and units are preserved. The audit identifies reports derived from saved predictions.
+
 ## Limitations and ongoing work
 
 - The experiments cover one internal dataset split and one training seed per recipe. The 29 dermatofibroma and 33 vascular lesion test images make their class-level scores sensitive to individual errors.
 - Hardware, numerical precision policy, pretrained weight variants, and loss aggregation limit cross-experiment interpretation. Experiments 04 and 06 normalize weighted loss across the full split. Experiment 05 averages weighted batch means by sample count. Historical wall-clock times and GPU epoch times should be interpreted with their recorded environments.
-- The audit found duplicate cached images within partitions, including two same-byte groups with conflicting labels in training. Exact hashes cannot rule out near-duplicates. Sensitivity analyses and the original result conventions are explained in the [research audit](docs/research-audit.md).
+- The audit found duplicate cached images within partitions, including two same-byte groups with conflicting labels in training. Exact hashes cannot rule out near-duplicates. Sensitivity analyses and the original result conventions are explained in the [research audit](results/Model%20Comparison%20Results/research-audit.md).
 - This milestone addresses offline educational research. Clinical applicability would require independent external validation, calibration, and prospective evaluation.
 
 Ongoing work includes repeated-seed training, stricter duplicate and grouping checks, and evaluation on an independent dataset.
