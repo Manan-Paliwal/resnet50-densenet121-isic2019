@@ -1,172 +1,77 @@
-# ResNet50 vs DenseNet121 on ISIC 2019
+# ResNet50 vs. DenseNet121 on ISIC 2019
 
-**A comparative, in-progress deep-learning study of eight-class skin-lesion classification.**
+An ongoing comparative study of **eight-class dermoscopic image classification**. Six experiments compare training from scratch, ImageNet transfer learning, and training-time augmentation using ResNet50 and DenseNet121.
 
-This repository documents model training, transfer learning, fine-tuning, and class-aware evaluation using PyTorch. It contains **five cleaned Jupyter notebooks**, experiment configurations, training histories, and evaluation summaries. The dataset and pretrained/trained checkpoint files are **not** distributed here.
+- **Author** · [Manan Paliwal](https://github.com/Manan-Paliwal)
+- **Framework** · PyTorch and TorchVision
+- **Milestone** · Six completed runs with audited held-out results
 
-**Author:** [Manan Paliwal](https://github.com/Manan-Paliwal) · **Framework:** PyTorch · **Dataset:** ISIC 2019 · **Status:** In progress
+## Held-out results
 
-## Research questions
+All six experiments were evaluated on the same 3,808-image internal test split. The audit recomputed the classification metrics from saved predictions and checked them against the aggregate artifacts. Macro F1 weights each diagnostic category equally.
 
-- How do ResNet50 and DenseNet121 behave when trained from scratch on an imbalanced medical-image dataset?
-- How does ImageNet initialization followed by feature extraction and fine-tuning affect evaluation results?
-- How do model choices affect performance across common and underrepresented lesion classes?
+| Experiment | Training recipe | Best val macro F1 | Test accuracy | Test macro F1 | Test weighted F1 |
+|---|---|---:|---:|---:|---:|
+| [01](notebooks/01_ResNet50_Scratch.ipynb) | ResNet50 from scratch | 40.46% | 56.36% | 41.20% | 58.29% |
+| [02](notebooks/02_DenseNet121_Scratch.ipynb) | DenseNet121 from scratch | 37.73% | 49.53% | 34.91% | 52.92% |
+| [03](notebooks/03_ResNet50_Transfer.ipynb) | ResNet50 transfer | 49.04% | 66.05% | 46.23% | 66.20% |
+| [04](notebooks/04_DenseNet121_Transfer.ipynb) | DenseNet121 transfer | 51.01% | 65.28% | **50.15%** | 66.45% |
+| [05](notebooks/05_ResNet50_Transfer_Augmentation.ipynb) | ResNet50 transfer + augmentation | **53.17%** | **66.12%** | 49.97% | **67.38%** |
+| [06](notebooks/06_DenseNet121_Transfer_Augmentation.ipynb) | DenseNet121 transfer + augmentation | 52.79% | 63.94% | 50.03% | 65.77% |
 
-The focus is on **controlled experiments and transparent evaluation**, not clinical deployment.
+![Held-out test performance across six CNN experiments](figures/test_metrics_comparison.png)
 
-## Dataset and split design
+- **Transfer runs scored higher than scratch runs.** Test macro F1 increased by 5.03 percentage points for ResNet50 (01 → 03) and 15.24 for DenseNet121 (02 → 04). These runs differ in their training protocols, and the DenseNet121 comparison spans Apple MPS and NVIDIA CUDA.
+- **The DenseNet121 augmentation result depends on the metric.** Relative to Experiment 04, Experiment 06 gained 1.78 points in validation macro F1 and 5.09 points in test macro recall. Its test accuracy fell by 1.34 points and its test macro F1 fell by 0.13 points.
+- **Experiments 04–06 were close on test macro F1.** Their scores span only 0.18 percentage points. For 04 → 06 the paired 95% test-group bootstrap interval for the macro F1 change was −3.40 to +3.20 points. This interval describes uncertainty across test groups for the fitted models. Seed-to-seed training variation remains unmeasured.
 
-The experiments use the **ISIC 2019** training dataset with **25,331 images** spanning eight diagnostic categories:
+See the [research audit](docs/research-audit.md) for per-class results, training trends, paired comparisons, and sensitivity checks.
 
-| Code | Diagnostic category |
-|---|---|
-| MEL | Melanoma |
-| NV | Melanocytic nevus |
-| BCC | Basal cell carcinoma |
-| AK | Actinic keratosis |
-| BKL | Benign keratosis |
-| DF | Dermatofibroma |
-| VASC | Vascular lesion |
-| SCC | Squamous cell carcinoma |
+## Dataset and protocol
 
-Dataset preparation is described in [`00_Dataset_Preparation.ipynb`](notebooks/00_Dataset_Preparation.ipynb). The notebook:
+The study uses **25,331 dermoscopic images** from the public labeled ISIC 2019 training release. The internal evaluation covers eight diagnoses. The official challenge evaluation used a separate test set with an additional outlier category. [ISIC 2019 challenge](https://challenge.isic-archive.com/landing/2019/)
 
-1. Loads image labels and metadata, including lesion IDs when available.
-2. Groups images by **lesion ID**, falling back to a unique image ID where a lesion ID is absent.
-3. Performs class-stratified **group-level** train/validation/test splitting, targeting approximately **70% / 15% / 15%** of groups.
-4. Checks that no group appears in more than one split, and saves the split CSVs for reuse.
+[Notebook 00](notebooks/00_Dataset_Preparation.ipynb) builds a class-stratified split at lesion-group level using seed 42. The permanent partitions contain **17,705 training**, **3,818 validation**, and **3,808 test** images. Image ID, assigned split group, known lesion ID, and exact cached JPEG hashes were checked across partitions. The **2,084** images with missing lesion IDs use image-level fallback groups. This leaves possible relationships between images that the available metadata and exact-hash checks cannot detect.
 
-Because the split happens at the **group** level, image-count percentages can differ slightly from the target proportions. All three published test evaluations report **3,808 test images**. Source images are cached at 256 × 256 before the 224 × 224 model input transforms.
+| Code | Diagnosis | Test images |
+|---|---|---:|
+| MEL | Melanoma | 648 |
+| NV | Melanocytic nevus | 1,951 |
+| BCC | Basal cell carcinoma | 507 |
+| AK | Actinic keratosis | 147 |
+| BKL | Benign keratosis | 404 |
+| DF | Dermatofibroma | 29 |
+| VASC | Vascular lesion | 33 |
+| SCC | Squamous cell carcinoma | 89 |
 
-## Experiments
+Models receive 224 × 224 inputs from a 256 × 256 JPEG cache with ImageNet normalization. Runs use batch size 32, AdamW, and class-weighted cross-entropy. Class weights come from inverse frequencies in the training split. Transfer runs fit an eight-output classifier with a frozen backbone and frozen BatchNorm statistics, then fine-tune from the best Stage 1 checkpoint with lower, separate learning rates. Experiment 03 evaluates its Stage 2 winner. Experiments 04–06 select between the stage winners using validation macro F1.
 
-| Notebook | Model | Training strategy | Published test evaluation |
-|---|---|---|---|
-| [01 — ResNet50 Scratch](notebooks/01_ResNet50_Scratch.ipynb) | ResNet50 | Random initialization | Available |
-| [02 — DenseNet121 Scratch](notebooks/02_DenseNet121_Scratch.ipynb) | DenseNet121 | Random initialization | Available |
-| [03 — ResNet50 Transfer](notebooks/03_ResNet50_Transfer.ipynb) | ResNet50 | ImageNet feature extraction, then fine-tuning | Available |
-| [04 — DenseNet121 Transfer](notebooks/04_DenseNet121_Transfer.ipynb) | DenseNet121 | ImageNet feature extraction, then fine-tuning | **Pending** |
+Augmentation in Experiments 05 and 06 applies 50% horizontal and vertical flips, bilinear rotation up to ±20° with reflection padding, and modest brightness, contrast, and saturation jitter during training. Validation and test preprocessing are deterministic.
 
-The documented configurations use **224 × 224** inputs, batch size **32**, AdamW, weighted cross-entropy, and an Apple Silicon **MPS** device. The scratch experiments record a maximum of 25 epochs and learning rate 0.0003. The transfer experiments use separate feature-extraction and fine-tuning stages. The published configurations for these runs indicate **no data augmentation**.
+## Reproduce the figures and workflow
 
-Full details, including learning rates and early-stopping settings, are in the JSON configurations under [`results/`](results/).
+- [Aggregate results](results/) contains the historical Experiments 01–03 records and [cloud results](results/cloud/) for 04–06, including histories, configurations, test summaries, per-class scores, and confusion matrices. [Figures](figures/) contains training curves and aggregate evaluations.
+- The public milestone contains cleaned notebooks and aggregate artifacts. Obtain the images, ground truth, and metadata from the dataset provider, following the provider’s licenses and attribution requirements. Dataset and model artifacts are kept outside this repository. [Official ISIC datasets](https://challenge.isic-archive.com/data/#2019)
 
-## Verified held-out test results
-
-The following numbers are taken from the committed `*_test_results.json` files—not estimated from graphs.
-
-| Model | Test accuracy | Macro F1 | Weighted F1 | Test loss |
-|---|---:|---:|---:|---:|
-| ResNet50 — scratch | 56.36% | 0.4120 | 0.5829 | 3.0361 |
-| DenseNet121 — scratch | 49.53% | 0.3491 | 0.5292 | 1.5568 |
-| ResNet50 — transfer + fine-tuning | 66.05% | 0.4623 | 0.6620 | 1.8281 |
-| DenseNet121 — transfer + fine-tuning | Pending | Pending | Pending | Pending |
-
-All three completed evaluations use the same reported test-set size (**3,808**). Macro F1 receives particular attention because it gives equal weight to each diagnostic class despite class imbalance. Accuracy alone can mask low recall or F1 for rarer classes.
-
-**Observed within this experiment:** the ResNet50 transfer-learning run improved test accuracy over the ResNet50 scratch run by about **9.69 percentage points**, and macro F1 by about **0.0503**. This is a descriptive comparison on the published split, **not** a claim that either approach is universally superior. The DenseNet121 transfer-learning comparison remains incomplete.
-
-**Source results:** [ResNet50 scratch](results/resnet50_scratch_test_results.json) · [DenseNet121 scratch](results/densenet121_scratch_test_results.json) · [ResNet50 transfer](results/resnet50_transfer_test_results.json)
-
-## Visual results
-
-The following plots are generated **from the committed training-history, test-results, and confusion-matrix files** using [`scripts/generate_figures.py`](scripts/generate_figures.py). Select an image to open it at full resolution. No model retraining is required.
-
-### Held-out test comparison
-
-[![Bar charts comparing test accuracy and macro F1 for ResNet50 scratch, DenseNet121 scratch, and ResNet50 transfer learning](figures/test_metrics_comparison.png)](figures/test_metrics_comparison.png)
-
-*Three runs have verified held-out test results. DenseNet121 transfer learning is deliberately omitted from this comparison until its final test evaluation is available.*
-
-### Training histories
-
-Each figure shows training and validation loss, training and validation accuracy, and **validation macro F1** by epoch. Transfer-learning charts distinguish feature extraction from fine-tuning with a dashed boundary.
-
-| ResNet50 from scratch | DenseNet121 from scratch |
-|:---:|:---:|
-| [![ResNet50 scratch training and validation curves](figures/resnet50_scratch_training.png)](figures/resnet50_scratch_training.png) | [![DenseNet121 scratch training and validation curves](figures/densenet121_scratch_training.png)](figures/densenet121_scratch_training.png) |
-
-| ResNet50 transfer learning | DenseNet121 transfer learning |
-|:---:|:---:|
-| [![ResNet50 transfer learning and fine-tuning curves](figures/resnet50_transfer_training.png)](figures/resnet50_transfer_training.png) | [![DenseNet121 transfer learning and fine-tuning curves](figures/densenet121_transfer_training.png)](figures/densenet121_transfer_training.png) |
-
-*The DenseNet121 transfer-learning history is available even though its final held-out test metrics have not yet been published. The plots reflect recorded runs rather than comparable wall-clock budgets.*
-
-### Normalized test confusion matrices
-
-The rows represent the **true diagnostic class**, and the columns represent the **predicted class**. Each row is divided by the total number of test examples in that class, so diagonal values show class-specific recall. These images summarize per-class errors; they do **not** establish clinical validity.
-
-| ResNet50 from scratch | DenseNet121 from scratch |
-|:---:|:---:|
-| [![Row-normalized ResNet50 scratch test confusion matrix](figures/resnet50_scratch_confusion_matrix.png)](figures/resnet50_scratch_confusion_matrix.png) | [![Row-normalized DenseNet121 scratch test confusion matrix](figures/densenet121_scratch_confusion_matrix.png)](figures/densenet121_scratch_confusion_matrix.png) |
-
-**ResNet50 transfer learning:**
-
-[![Row-normalized ResNet50 transfer learning test confusion matrix](figures/resnet50_transfer_confusion_matrix.png)](figures/resnet50_transfer_confusion_matrix.png)
-
-*The DenseNet121 transfer-learning test confusion matrix will be added only after the evaluation is complete.*
-
-To regenerate the figures locally after cloning and installing the dependencies:
+From the repository root, install the notebook dependencies and regenerate the figures from saved result files:
 
 ```bash
+python -m pip install -r requirements.txt
 python scripts/generate_figures.py
 ```
 
-This writes eight PNG files under `figures/` without loading the ISIC images or trained checkpoints.
+To reproduce training:
 
-## Repository layout
-
-```text
-.
-├── README.md
-├── requirements.txt
-├── .gitignore
-├── notebooks/
-│   ├── 00_Dataset_Preparation.ipynb
-│   ├── 01_ResNet50_Scratch.ipynb
-│   ├── 02_DenseNet121_Scratch.ipynb
-│   ├── 03_ResNet50_Transfer.ipynb
-│   └── 04_DenseNet121_Transfer.ipynb
-└── results/
-    ├── *_history.csv
-    ├── *_test_results.json
-    ├── *_confusion_matrix*.csv
-    ├── *_per_class_results.csv
-    ├── *_config.json
-    └── public_configs/
-        └── *_transfer_stage2_config.json
-```
-
-The `results/` directory preserves numerical histories, per-class results, confusion matrices, and configuration records where available. The publicly shared notebooks have **saved cell outputs removed**; this does not remove the separate committed evaluation files.
-
-## Environment and reproducing the workflow
-
-The notebooks were developed on a Mac with PyTorch's MPS backend. Exact package versions are **not pinned or independently revalidated** in this repository; `requirements.txt` lists the primary libraries used by the notebooks.
-
-```bash
-git clone https://github.com/Manan-Paliwal/resnet50-densenet121-isic2019.git
-cd resnet50-densenet121-isic2019
-python -m pip install -r requirements.txt
-jupyter lab
-```
-
-1. Obtain the ISIC 2019 training images, ground-truth CSV, and metadata CSV from the official ISIC dataset source. Follow the data provider's license and access terms.
-2. In [the dataset-preparation notebook](notebooks/00_Dataset_Preparation.ipynb), confirm the `RAW_DATA_DIR`, `IMAGE_DIR`, `GROUND_TRUTH_FILE`, and `METADATA_FILE` locations match your extraction layout. The notebook currently expects `dataset/ISIC_2019_raw/` under the project root, with a nested training-image directory.
-3. **Launch JupyterLab from the project root**, because the notebooks set `PROJECT_DIR = Path.cwd()`. Run dataset preparation first to generate `dataset/ISIC_2019_master.csv` and `dataset/splits/{train,val,test}.csv`.
-4. Run the experiment notebooks using the same prepared splits, adjusting compute settings for your device.
-
-**Reproduction limitations:** The dataset, saved image cache, and large checkpoint files are excluded. Stage-2 public configurations replace the original `starting_checkpoint` paths with placeholders. Reproducing fine-tuning requires generating your own Stage-1 checkpoints. Some notebook cells also assume experiment artifacts were created by earlier cells or runs; this repository is a documented experimental workflow, **not a tested one-command reproduction package**. GPU/CUDA settings may require changes from the original MPS configuration.
+1. Open the notebooks from the repository root or configure their project and dataset paths explicitly. Place the downloaded ISIC assets in the layout described in [Notebook 00](notebooks/00_Dataset_Preparation.ipynb).
+2. Reuse the original split manifests and image cache if available to you. Otherwise run Notebook 00 to regenerate the group-level split, then use the cache-building section of Notebook 01 to prepare the resized JPEGs.
+3. Run the selected training notebook with a compatible PyTorch and TorchVision device build. Use fresh model and results directories to preserve the published artifacts. Adjust the legacy 01–03 output paths before training. The appendices in Notebooks 04–06 describe checkpoint recovery on persistent storage.
+4. Match the recorded run settings for historical reproduction. Experiments 01–03 used MPS and zero DataLoader workers. The RTX 3090 runs for Experiments 04–06 used four workers with CUDA AMP disabled. The saved cloud configurations describe the executed settings.
 
 ## Limitations and ongoing work
 
-- The evaluation is limited to the documented ISIC 2019 split; generalization to other institutions, acquisition devices, or populations has **not** been established.
-- Class imbalance and small support for rare diagnostic classes remain important evaluation concerns.
-- Scratch and transfer runs are not proof of causal architectural superiority; initialization, optimization, and training budgets also affect results.
-- The DenseNet121 transfer-learning test evaluation is not yet published.
-- Planned work includes augmentation studies, further architecture comparisons, confusion-matrix interpretation, robustness checks, and ensemble experiments.
+- The experiments cover one internal dataset split and one training seed per recipe. The 29 dermatofibroma and 33 vascular lesion test images make their class-level scores sensitive to individual errors.
+- Hardware, numerical precision policy, pretrained weight variants, and loss aggregation limit cross-experiment interpretation. Experiments 04 and 06 normalize weighted loss across the full split. Experiment 05 averages weighted batch means by sample count. Historical wall-clock times and GPU epoch times should be interpreted with their recorded environments.
+- The audit found duplicate cached images within partitions, including two same-byte groups with conflicting labels in training. Exact hashes cannot rule out near-duplicates. Sensitivity analyses and the original result conventions are explained in the [research audit](docs/research-audit.md).
+- This milestone addresses offline educational research. Clinical applicability would require independent external validation, calibration, and prospective evaluation.
 
-> **Medical disclaimer:** This is an educational research project. It is not a validated diagnostic system and must not be used to guide patient care.
-
----
-
-**Maintainer:** [Manan Paliwal](https://github.com/Manan-Paliwal) · [LinkedIn](https://www.linkedin.com/in/manan-paliwal)
+Ongoing work includes repeated-seed training, stricter duplicate and grouping checks, and evaluation on an independent dataset.

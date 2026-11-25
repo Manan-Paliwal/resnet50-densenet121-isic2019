@@ -1,0 +1,30 @@
+{
+  "selected_stage": "stage2",
+  "selected_checkpoint": "densenet121_transfer_aug_stage2_best.pth",
+  "selected_epoch": 9,
+  "selected_validation_macro_f1": 0.5278863613299912,
+  "best_validation_macro_f1": 0.5278863613299912,
+  "stage1_best_validation_macro_f1": 0.4491553158246603,
+  "stage2_best_validation_macro_f1": 0.5278863613299912,
+  "best_stage2_validation_macro_f1": 0.5278863613299912,
+  "fine_tuning_validation_f1_change_pp": 7.873104550533094,
+  "epochs_completed": {
+    "stage1": 10,
+    "stage2": 13
+  },
+  "training_and_validation_seconds": 1255.0765414501075,
+  "training_minutes": 20.91794235750179,
+  "total_parameters": 6962056,
+  "training_hardware": [
+    "NVIDIA GeForce RTX 3090"
+  ],
+  "training_precision": "float32",
+  "evaluation_hardware": "NVIDIA GeForce RTX 3090",
+  "test_samples": 3808,
+  "test_loss": 1.239288458680988,
+  "test_accuracy": 0.6394432773109243,
+  "test_macro_precision": 0.46670546575703487,
+  "test_macro_recall": 0.5783007250986487,
+  "test_macro_f1": 0.5002934794973415,
+  "test_weighted_f1": 0.6577299092945852
+}

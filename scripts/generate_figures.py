@@ -24,38 +24,39 @@ FIGURES = PROJECT_ROOT / "figures"
 FIGURES.mkdir(parents=True, exist_ok=True)
 
 CLASS_LABELS = ["MEL", "NV", "BCC", "AK", "BKL", "DF", "VASC", "SCC"]
-EXPERIMENTS = [
-    {
-        "title": "ResNet50 — trained from scratch",
-        "slug": "resnet50_scratch",
-        "histories": ["resnet50_scratch_history.csv"],
-        "matrix": "resnet50_scratch_confusion_matrix.csv",
-    },
-    {
-        "title": "DenseNet121 — trained from scratch",
-        "slug": "densenet121_scratch",
-        "histories": ["densenet121_scratch_history.csv"],
-        "matrix": "densenet121_scratch_confusion_matrix.csv",
-    },
-    {
-        "title": "ResNet50 — transfer learning + fine-tuning",
-        "slug": "resnet50_transfer",
-        "histories": [
-            "resnet50_transfer_stage1_history.csv",
-            "resnet50_transfer_stage2_history.csv",
-        ],
-        "matrix": "resnet50_transfer_confusion_matrix.csv",
-    },
-    {
-        "title": "DenseNet121 — transfer learning + fine-tuning",
-        "slug": "densenet121_transfer",
-        "histories": [
-            "densenet121_transfer_stage1_history.csv",
-            "densenet121_transfer_stage2_history.csv",
-        ],
-        "matrix": None,  # No published DenseNet121 transfer test results yet.
-    },
-]
+EXPERIMENTS = [{'title': 'ResNet50 — scratch',
+  'slug': 'resnet50_scratch',
+  'histories': ['resnet50_scratch_history.csv'],
+  'matrix': 'resnet50_scratch_confusion_matrix.csv',
+  'metrics': 'resnet50_scratch_test_results.json'},
+ {'title': 'DenseNet121 — scratch',
+  'slug': 'densenet121_scratch',
+  'histories': ['densenet121_scratch_history.csv'],
+  'matrix': 'densenet121_scratch_confusion_matrix.csv',
+  'metrics': 'densenet121_scratch_test_results.json'},
+ {'title': 'ResNet50 — transfer',
+  'slug': 'resnet50_transfer',
+  'histories': ['resnet50_transfer_stage1_history.csv', 'resnet50_transfer_stage2_history.csv'],
+  'matrix': 'resnet50_transfer_confusion_matrix.csv',
+  'metrics': 'resnet50_transfer_test_results.json'},
+ {'title': 'DenseNet121 — transfer',
+  'slug': 'densenet121_transfer',
+  'histories': ['cloud/densenet121_transfer/stage1_history.csv',
+                'cloud/densenet121_transfer/stage2_history.csv'],
+  'matrix': 'cloud/densenet121_transfer/confusion_matrix.csv',
+  'metrics': 'cloud/densenet121_transfer/test_results.json'},
+ {'title': 'ResNet50 — transfer + augmentation',
+  'slug': 'resnet50_transfer_aug',
+  'histories': ['cloud/resnet50_transfer_aug/resnet50_transfer_aug_stage1_history.csv',
+                'cloud/resnet50_transfer_aug/resnet50_transfer_aug_stage2_history.csv'],
+  'matrix': 'cloud/resnet50_transfer_aug/resnet50_transfer_aug_confusion_matrix.csv',
+  'metrics': 'cloud/resnet50_transfer_aug/resnet50_transfer_aug_test_results.json'},
+ {'title': 'DenseNet121 — transfer + augmentation',
+  'slug': 'densenet121_transfer_aug',
+  'histories': ['cloud/densenet121_transfer_aug/densenet121_transfer_aug_stage1_history.csv',
+                'cloud/densenet121_transfer_aug/densenet121_transfer_aug_stage2_history.csv'],
+  'matrix': 'cloud/densenet121_transfer_aug/densenet121_transfer_aug_confusion_matrix.csv',
+  'metrics': 'cloud/densenet121_transfer_aug/densenet121_transfer_aug_test_results.json'}]
 
 
 def read_history(name):
@@ -171,24 +172,21 @@ def plot_confusion(experiment):
 
 
 def plot_test_comparison():
-    sources = [
-        ("ResNet50\nscratch", "resnet50_scratch_test_results.json"),
-        ("DenseNet121\nscratch", "densenet121_scratch_test_results.json"),
-        ("ResNet50\ntransfer", "resnet50_transfer_test_results.json"),
-    ]
-    names, accuracy, macro_f1 = [], [], []
-    for label, filename in sources:
-        data = json.loads((RESULTS / filename).read_text(encoding="utf-8"))
-        names.append(label)
+    names, accuracy, macro_f1, weighted_f1 = [], [], [], []
+    for number, experiment in enumerate(EXPERIMENTS, start=1):
+        data = json.loads((RESULTS / experiment["metrics"]).read_text(encoding="utf-8"))
+        names.append(f"{number:02d}")
         accuracy.append(100 * data["test_accuracy"])
-        macro_f1.append(data["test_macro_f1"])
+        macro_f1.append(100 * data["test_macro_f1"])
+        weighted_f1.append(100 * data["test_weighted_f1"])
 
     x = np.arange(len(names))
-    fig, axes = plt.subplots(1, 2, figsize=(11, 4.4),
+    fig, axes = plt.subplots(1, 3, figsize=(13.5, 4.4),
                              layout="constrained")
     for ax, values, label, ylim, fmt in [
         (axes[0], accuracy, "Test accuracy (%)", (0, 100), "{:.1f}%"),
-        (axes[1], macro_f1, "Test macro F1", (0, 1), "{:.3f}"),
+        (axes[1], macro_f1, "Test macro F1 (%)", (0, 100), "{:.1f}%"),
+        (axes[2], weighted_f1, "Test weighted F1 (%)", (0, 100), "{:.1f}%"),
     ]:
         bars = ax.bar(x, values, width=0.65)
         ax.set_xticks(x, names)

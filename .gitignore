@@ -1,66 +1,60 @@
-# ==============================
-# DATASETS
-# ==============================
-dataset/
-datasets/
+# Local datasets, medical images and per-image exports
+/dataset/
+/datasets/
+*predictions.csv
+*.jpg
+*.jpeg
+*.dcm
 
-# ==============================
-# TRAINED MODELS
-# ==============================
-saved_models/
+# Local experiment records, recovery state and archives
+/runs/
+/archive/
+/Practice/
+/saved_models/
+/logs/
 *.pth
 *.pt
 *.ckpt
 *.h5
 *.safetensors
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+/results/resnet50_transfer_stage2_config.json
+/results/densenet121_transfer_stage2_config.json
 
-# ==============================
-# JUPYTER TEMPORARY FILES
-# ==============================
+# Publish sanitized notebooks under notebooks/
+/*.ipynb
+*_executed.ipynb
 .ipynb_checkpoints/
 .virtual_documents/
 
-# ==============================
-# PYTHON CACHE
-# ==============================
+# Environments, tooling and caches
 __pycache__/
-*.pyc
-*.pyo
-
-# ==============================
-# ENVIRONMENTS
-# ==============================
-venv/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.cache/
 .venv/
+venv/
 env/
 anaconda_projects/
-
-# ==============================
-# MACOS FILES
-# ==============================
 .DS_Store
-
-# ==============================
-# SENSITIVE CONFIGURATION
-# ==============================
-.env
-.env.*
-!.env.example
-
-# ==============================
-# EDITOR FILES
-# ==============================
 .vscode/
 .idea/
 
-# Per-image prediction files
-# Excluded because they may contain local filesystem paths
-results/*predictions.csv
-
-# Original research notebooks
-# Upload only cleaned copies inside notebooks/
-/*.ipynb
-
-results/densenet121_transfer_stage2_config.json
-
-results/resnet50_transfer_stage2_config.json
+# Credentials and local configuration
+.env
+.env.*
+!.env.example
+.ssh/
+.aws/
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+credentials.json

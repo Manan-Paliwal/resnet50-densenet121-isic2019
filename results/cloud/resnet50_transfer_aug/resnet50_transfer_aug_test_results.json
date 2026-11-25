@@ -1,0 +1,30 @@
+{
+  "selected_stage": "stage2",
+  "selected_checkpoint": "resnet50_transfer_aug_stage2_best.pth",
+  "selected_epoch": 15,
+  "selected_validation_macro_f1": 0.5317304365176798,
+  "best_validation_macro_f1": 0.5317304365176798,
+  "stage1_best_validation_macro_f1": 0.4407654599291413,
+  "stage2_best_validation_macro_f1": 0.5317304365176798,
+  "best_stage2_validation_macro_f1": 0.5317304365176798,
+  "fine_tuning_validation_f1_change_pp": 9.096497658853853,
+  "epochs_completed": {
+    "stage1": 10,
+    "stage2": 15
+  },
+  "training_and_validation_seconds": 1247.397755610291,
+  "training_minutes": 20.78996259350485,
+  "total_parameters": 23524424,
+  "training_hardware": [
+    "NVIDIA GeForce RTX 3090"
+  ],
+  "training_precision": "float32",
+  "evaluation_hardware": "NVIDIA GeForce RTX 3090",
+  "test_samples": 3808,
+  "test_loss": 1.3484945858226103,
+  "test_accuracy": 0.6612394957983193,
+  "test_macro_precision": 0.4727370094746675,
+  "test_macro_recall": 0.552235842765686,
+  "test_macro_f1": 0.4997420554556881,
+  "test_weighted_f1": 0.6738009980488185
+}

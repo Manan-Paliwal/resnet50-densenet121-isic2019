@@ -1,0 +1,13 @@
+{
+  "epochs": 15,
+  "patience": 4,
+  "backbone_lr": 1e-05,
+  "classifier_lr": 0.0001,
+  "starting_checkpoint": "resnet50_transfer_aug_stage1_best.pth",
+  "optimizer": "AdamW",
+  "weight_decay": 0.0001,
+  "scheduler": "ReduceLROnPlateau on validation loss",
+  "scheduler_factor": 0.5,
+  "scheduler_patience": 2,
+  "cuda_amp": false
+}
